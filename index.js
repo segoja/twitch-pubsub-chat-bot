@@ -41,7 +41,12 @@ const twitchClient = TwitchClient.withCredentials(
   // New Webhooks File
   twitchWebhooks()
 
-
+  // *****************************************************
+  // Not testing ATM since running another application on
+  // NGROK for Twitch Webhooks and Discord
+  // *****************************************************
+  
+  
   // Take BELOW to twitchWebhooks folder/file
   // // Twitch Webhooks - to come later
   // Need for Followers and Stream Updates(going live/ ending and title/game changes)
