@@ -1,0 +1,16 @@
+{
+  "name": "twitch-pubsub-channel-currency",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "twitch": "^4.0.7",
+    "twitch-chat-client": "^4.0.7",
+    "twitch-pubsub-client": "^4.0.7"
+  }
+}
