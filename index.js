@@ -8,13 +8,11 @@ const {
   TWITCH_CLIENT_SECRET
 } = require('./config/dev');
 
-const {
-  handleSubscription,
-  handleRedemption,
-  handleBits, handleWhisper
-} = require('./handlers/handleEvents');
+const { chatBot } = require('./twitch/chatbot')
+const { pubSubBot } = require('./twitch/pubSubBot')
+const { twitchWebhooks } = require('./twitch/webhooks')
 
-const { handleMessage } = require('./handlers/handleMessage');
+const { getTwitchUserByID, getTwitchUserByUsername, getMultipleTwitchUsersByID, getMultipleTwitchUsersByUsernams, getStreamByUserId } = require('./twitch/helixAPI')
 
 const twitchClient = TwitchClient.withCredentials(
   TWITCH_CLIENT_ID,
@@ -22,58 +20,50 @@ const twitchClient = TwitchClient.withCredentials(
 );
 
 (async () => {
-  // Pubsub
-  const pubSubClient = new PubsubClient();
-  await pubSubClient.registerUserListener(twitchClient);
+  // Testing Helix API Calls:
+  // const userByID = await getTwitchUserByID('170894673', twitchClient);
+  // console.log({userByID})
+  // const userByUsername = await getTwitchUserByUsername('itsdeke', twitchClient);
+  // console.log({userByUsername})
+  // const usersByIDs = await getMultipleTwitchUsersByID(['170894673', '32216218', '91244502'], twitchClient);
+  // console.log({usersByIDs})
+  // const usersByUsernames = await getMultipleTwitchUsersByUsernams(['itsdeke', 'dellec', 'videogameroulette'], twitchClient);
+  // console.log({usersByUsernames})
+  const streamByUserID = await getStreamByUserId('170894673', twitchClient);
+  console.log({streamByUserID})
 
-  // onRedemption = Channel Point Reward Redemptions
-  await pubSubClient.onRedemption(TWITCH_ID, (message) => {
-    const result = handleRedemption(message);
-    console.log({ result });
-  });
+  // New PubSub File
+  pubSubBot(PubsubClient , twitchClient, TWITCH_ID) // For lack of better name
 
-  // onSubscription = Channel Subscriptions
-  await pubSubClient.onSubscription(TWITCH_ID, (message) => {
-    const result = handleSubscription(message);
-    console.log({ result });// console.log result of subscriptionhandler
-  });
+  // New Chatbot File
+  chatBot(ChatClient, twitchClient)
 
-  // onBits? = Channel bits?
-  await pubSubClient.onBits(TWITCH_ID, (message) => {
-    const result = handleBits(message);
-    console.log({ result }); // console.log result of bitshandler
-  });
+  // New Webhooks File
+  twitchWebhooks()
 
-  // Need Handlers
-  // onBits? = Channel bits?
-  await pubSubClient.onBitsBadgeUnlock(TWITCH_ID, (message) => {
-    // const result = handleBits(message);
-    // console.log({ result });
-  });
 
-  // Whispers?
-  await pubSubClient.onWhisper(TWITCH_ID, (message) => {
-    console.log("whisper message", message._data.data_object)
-    const result = handleWhisper(message);
-    console.log({ result }); // console.log resunt of whisper handle
-  });
+  // Take BELOW to twitchWebhooks folder/file
+  // // Twitch Webhooks - to come later
+  // Need for Followers and Stream Updates(going live/ ending and title/game changes)
+  // const WebHookListener = require('twitch-webhooks').default;
+  // // ngrok generats random subdomain randomsubdomain.ngrok.io
+  // // Will need to hcange every time you restart ngrok server,
+  // // or upgrade to premium to get a static subdomain
+  // const whListener = await WebHookListener.create(twitchClient, {
+  //   hostName: 'xxxxxxxx.ngrok.io', // This url must match that of dev.twitch.tv application url
+  //   port: 8090,
+  //   reverseProxy: { port: 443, ssl: true }
+  // });
+  // whListener.listen();
 
-  // onModAction?
-  await pubSubClient.onModAction(TWITCH_ID, (topic, message) => {
-    // console.log({topic})
-    // console.log({message})
-  });
+  // Twitch Webhook FOLLOWERS:
+  // user = twitch username: "itsdeke" // string
+  // or 
+  // user = twitch userid: "170894673" // string
+  // const followers = await whListener.subscribeToFollowersToUser(user, (followEvent) => {
+  //   console.log({followEvent})
+  // Save followers to database for custom event list reload
 
-  // Chat Client, irc chat
-  const chatClient = await ChatClient.forTwitchClient(twitchClient, {
-    channels: ['itsdeke', 'dellec']
-  });
+  // })
 
-  await chatClient.connect();
-  chatClient.onPrivmsg((channel, user, message) => {
-    const response = handleMessage(channel, user, message);
-    console.log({ response });
-    if (response === undefined) return;
-    chatClient.say(channel, response);
-  });
 })();

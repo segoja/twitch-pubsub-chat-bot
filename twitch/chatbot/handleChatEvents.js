@@ -21,9 +21,12 @@ const handleMessage = (channel, user, message) => {
         break;
     }
   } else {
-    return
-    console.log('Message did not start with "!"');
+    console.log('Message did not start with "!"')
   }
+};
+
+const handleChatBan = () => {
+  
 };
 
 module.exports = {
